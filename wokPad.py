@@ -31,9 +31,27 @@ GPIO.setup(C2, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 GPIO.setup(C3, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 GPIO.setup(C4, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 
-# CODE STUFF
-secretCode = "2026"
+# GO SET THE CODE STUFF YOURSELF! THE CONFIG FILE IS EASY JSON.
+
 currentInput = ""
+configFile = "codepadConfig"
+secretCode = ""
+logDestination = ""
+logFile = ""
+logging = False
+try:
+	configFile = open(configFile)
+	secretCode = configFile.readline().split(" ")[1].rstrip()
+	logDestination = configFile.readline().split(" ")[1].rstrip()
+except:
+	print("Could not find config file, or your log file isn't set up properly. Make sure everything is properly set.")
+	exit(0)
+
+try: 
+	logFile = open(logDestination, "a")
+	logging = True
+except:
+	print("Unable to initialize log file, logging will be disabled.")
 
 def checkCode():
 	global secretCode
@@ -49,11 +67,11 @@ def readLine(line, characters):
 	if (GPIO.input(C1) == 1):
 		#print(characters[0] + " || " + str(line) + "C1")
 		currentInput += characters[0]
-		print(currentInput)
+		print("> " + currentInput)
 	if (GPIO.input(C2) == 1):
 		#print(characters[1] + " || " + str(line) + "C2")
 		currentInput += characters[1]
-		print(currentInput)
+		print("> " + currentInput)
 	if (GPIO.input(C3) == 1):
 		#print(characters[2] + " || " + str(line) + "C3")
 		if (line == L4):
@@ -61,16 +79,18 @@ def readLine(line, characters):
 				print("Congratulations! You got the code!")
 				exit(0)
 			else:
-				print("Sorry, try again.")
+				print("Incorrect code.")
+				if (logging):
+					logFile.write("FAILED ATTEMPT: " + currentInput + "\n")
 		else:
 			currentInput += characters[2]
-			print(currentInput)
+			print("> " + currentInput)
 	if (GPIO.input(C4) == 1):
 		if (line == L3):
 			currentInput = ""
 		else:
 			currentInput += characters[3]
-			print(currentInput)
+			print("> " + currentInput)
 		# print(characters[3] + " || " + str(line) + "C4")
 	GPIO.output(line,GPIO.LOW)
 	
