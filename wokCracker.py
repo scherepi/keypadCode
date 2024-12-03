@@ -7,4 +7,45 @@ import time
 GPIO.setwarnings(False)
 GPIO.setmode(GPIO.BCM)
 
-# ROWS
+# ROWS:
+
+L1 = 5
+L2 = 6
+L3 = 13
+L4 = 19
+
+# WE'VE GOTTA INVERT THESE SUCKERS. OUTPUT BECOMES INPUT!
+
+GPIO.setup(L1, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+GPIO.setup(L2, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+GPIO.setup(L3, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+GPIO.setup(L4, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+
+# COLUMNS:
+
+C4 = 1
+C3 = 7
+C2 = 8
+C1 = 25
+
+GPIO.setup(C1, GPIO.OUT)
+GPIO.setup(C2, GPIO.OUT)
+GPIO.setup(C3, GPIO.OUT)
+GPIO.setup(C4, GPIO.OUT)
+
+# NOT GONNA MESS WITH ALL THE LOGGING SHIT HERE... MAYBE LATER
+# TODO: IMPLEMENT LOGGING
+
+# TIME TO FIGURE OUT OUR FUNCTIONS...
+
+# OKAY, HERE'S THE DEAL. FIRST, WE HAVE TO SYNCHRONIZE WITH THE TIMING OF THE LINE SENDS ON THE TARGET.
+synchronized = False
+
+while not synchronized:
+	if (GPIO.input(L1) == 1):
+		synchronized = True
+		print("SYNCHRONIZED, CAUGHT INPUT ON LINE 1")
+	else:
+		time.sleep(0.01)
+
+# NOW WE'RE SET TO START SENDING OUR INPUT!

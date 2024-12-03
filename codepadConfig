@@ -1,2 +1,3 @@
 CODE= 3001
 log= /var/log/keypad/failLog
+maxTries= 10

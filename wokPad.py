@@ -39,10 +39,13 @@ secretCode = ""
 logDestination = ""
 logFile = ""
 logging = False
+maxTries = 5 # defaults to 5
+currentIncorrect = 0
 try:
 	configFile = open(configFile)
 	secretCode = configFile.readline().split(" ")[1].rstrip()
 	logDestination = configFile.readline().split(" ")[1].rstrip()
+	maxTries = int(configFile.readline().split(" ")[1].rstrip())
 except:
 	print("Could not find config file, or your log file isn't set up properly. Make sure everything is properly set.")
 	exit(0)
@@ -80,13 +83,20 @@ def readLine(line, characters):
 				exit(0)
 			else:
 				print("Incorrect code.")
+				currentIncorrect++
 				if (logging):
 					logFile.write("FAILED ATTEMPT: " + currentInput + "\n")
+				if (currentIncorrect == maxTries):
+					#TODO: make logs more verbose (timestamps)
+					logFile.write("!!! LOCKOUT EVENT !!!")
+					print("Nice try. You aren't brute-forcing this.")
+					exit(0)
 		else:
 			currentInput += characters[2]
 			print("> " + currentInput)
 	if (GPIO.input(C4) == 1):
 		if (line == L3):
+			print("Input cleared!")
 			currentInput = ""
 		else:
 			currentInput += characters[3]
