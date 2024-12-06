@@ -3,6 +3,7 @@
 # I AM THE BEAST I WORSHIP
 import RPi.GPIO as GPIO
 import time
+from datetime import datetime
 
 GPIO.setwarnings(False)
 GPIO.setmode(GPIO.BCM)
@@ -41,6 +42,9 @@ logFile = ""
 logging = False
 maxTries = 5 # defaults to 5
 currentIncorrect = 0
+
+now = datetime.now()
+
 try:
 	configFile = open(configFile)
 	secretCode = configFile.readline().split(" ")[1].rstrip()
@@ -66,6 +70,7 @@ def checkCode():
 
 def readLine(line, characters):
 	global currentInput
+	global currentIncorrect
 	GPIO.output(line,GPIO.HIGH)
 	if (GPIO.input(C1) == 1):
 		#print(characters[0] + " || " + str(line) + "C1")
@@ -83,12 +88,11 @@ def readLine(line, characters):
 				exit(0)
 			else:
 				print("Incorrect code.")
-				currentIncorrect++
+				currentIncorrect += 1
 				if (logging):
 					logFile.write("FAILED ATTEMPT: " + currentInput + "\n")
 				if (currentIncorrect == maxTries):
-					#TODO: make logs more verbose (timestamps)
-					logFile.write("!!! LOCKOUT EVENT !!!")
+					logFile.write("!!! LOCKOUT EVENT !!! @ " + now.__str__())
 					print("Nice try. You aren't brute-forcing this.")
 					exit(0)
 		else:
