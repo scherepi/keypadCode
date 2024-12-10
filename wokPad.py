@@ -39,6 +39,8 @@ configFile = "codepadConfig"
 secretCode = ""
 logDestination = ""
 logFile = ""
+rawKeyDestination = ""
+rawKeyFile = ""
 logging = False
 maxTries = 5 # defaults to 5
 currentIncorrect = 0
@@ -49,6 +51,7 @@ try:
 	configFile = open(configFile)
 	secretCode = configFile.readline().split(" ")[1].rstrip()
 	logDestination = configFile.readline().split(" ")[1].rstrip()
+	rawKeyDestination = configFile.readline().split(" ")[1].rstrip()
 	maxTries = int(configFile.readline().split(" ")[1].rstrip())
 except:
 	print("Could not find config file, or your log file isn't set up properly. Make sure everything is properly set.")
@@ -56,6 +59,8 @@ except:
 
 try: 
 	logFile = open(logDestination, "a")
+	rawKeyFile = open(rawKeyDestination, "a")
+	rawKeyFile.write("-- start of session --\n")
 	logging = True
 except:
 	print("Unable to initialize log file, logging will be disabled.")
@@ -75,13 +80,16 @@ def readLine(line, characters):
 	if (GPIO.input(C1) == 1):
 		#print(characters[0] + " || " + str(line) + "C1")
 		currentInput += characters[0]
+		rawKeyFile.write(characters[0])
 		print("> " + currentInput)
 	if (GPIO.input(C2) == 1):
 		#print(characters[1] + " || " + str(line) + "C2")
 		currentInput += characters[1]
+		rawKeyFile.write(characters[1])
 		print("> " + currentInput)
 	if (GPIO.input(C3) == 1):
 		#print(characters[2] + " || " + str(line) + "C3")
+		rawKeyFile.write(characters[2])
 		if (line == L4):
 			if (checkCode()):
 				print("Congratulations! You got the code!")
@@ -99,6 +107,7 @@ def readLine(line, characters):
 			currentInput += characters[2]
 			print("> " + currentInput)
 	if (GPIO.input(C4) == 1):
+		rawKeyFile.write(characters[3])
 		if (line == L3):
 			print("Input cleared!")
 			currentInput = ""
