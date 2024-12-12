@@ -36,12 +36,49 @@ GPIO.setup(C4, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 # LCD SETUP
 
 screen = driver.lcd()
-screen.lcd_display_string("LCD INIT", 1)
-time.sleep(1)
-screen.lcd_clear()
+screenL1 = ""
+screenL2 = ""
 
-# TODO: cursor stuff
+def LCDprompt():
+	global screen
+	global screenL1
+	screen.lcd_clear()
+	screenL1 = ">"
+	screen.lcd_display_string(">", 1)
 
+def LCDclear():
+	global screen
+	global screenL2
+	LCDprompt()
+	screenL2 = "Cleared!"
+	screen.lcd_display_string(screenL2, 2)
+
+def LCDwrite(character):
+	global screen
+	global screenL1
+	screenL1 = screenL1 + character
+	screen.lcd_display_string(screenL1, 1)
+
+def LCDsuccess():
+	global screen
+	screen.lcd_clear()
+	screen.lcd_display_string("You're in!", 1)
+# has to be declared here for the LCD
+currentIncorrect = 0
+maxTries = 5 # defaults to 5
+def LCDincorrect():
+	global screen
+	global screenL2
+	global currentIncorrect
+	global maxTries
+	triesLeft = maxTries - currentIncorrect
+	screenL2 = "Tries left: " + str(triesLeft)
+	screen.lcd_display_string(screenL2, 2)
+def LCDlockout():
+	global screen
+	global screenL1
+	screen.lcd_clear()
+	screen.lcd_display_string("Lame.", 1)
 # GO SET THE CODE STUFF YOURSELF! THE CONFIG FILE IS EASY JSON.
 
 currentInput = ""
@@ -52,8 +89,6 @@ logFile = ""
 rawKeyDestination = ""
 rawKeyFile = ""
 logging = False
-maxTries = 5 # defaults to 5
-currentIncorrect = 0
 
 
 now = datetime.now()
@@ -94,15 +129,15 @@ def readLine(line, characters):
 	if (GPIO.input(C1) == 1):
 		#print(characters[0] + " || " + str(line) + "C1")
 		currentInput += characters[0]
+		LCDwrite(characters[0])
 		if (logging):
 			rawKeyFile.write(characters[0]) # Log raw keypresses
-		print("> " + currentInput)
 	if (GPIO.input(C2) == 1):
 		#print(characters[1] + " || " + str(line) + "C2")
 		currentInput += characters[1]
+		LCDwrite(characters[1])
 		if (logging):
 			rawKeyFile.write(characters[1]) # Continue to log raw keypresses...
-		print("> " + currentInput)
 	if (GPIO.input(C3) == 1):
 		#print(characters[2] + " || " + str(line) + "C3")
 		if (logging):
@@ -110,11 +145,11 @@ def readLine(line, characters):
 		if (line == L4):
 			# All of this will run when the 'C' button is pressed.
 			if (checkCode()):
-				print("Congratulations! You got the code!")
+				LCDsuccess()
 				#TODO: implement more interesting success behavior (LED or piezo, perhaps)
 				exit(0)
 			else:
-				print("Incorrect code.")
+				LCDincorrect()
 				currentIncorrect += 1
 				if (logging):
 					# If log initialization was successful and you messed up, we're keeping track.
@@ -122,25 +157,26 @@ def readLine(line, characters):
 				if (currentIncorrect == maxTries):
 					# If you messed up enough, you're getting locked out! And we're writing a special event to the logs, just to track what an embarassment you are.
 					logFile.write("!!! LOCKOUT EVENT !!! @ " + now.__str__())
+					LCDlockout()
 					print("Nice try. You aren't brute-forcing this.") # Gotta be a little cheeky - attitude is part of the hacker toolkit
 					exit(0)
 		else:
 			currentInput += characters[2]
-			print("> " + currentInput)
+			LCDwrite(characters[2])
 	if (GPIO.input(C4) == 1):
 		if (logging):
 			rawKeyFile.write(characters[3])
 		if (line == L3):
-			print("Input cleared!")
+			LCDclear()
 			currentInput = ""
 		else:
-			currentInput += characters[3]
-			print("> " + currentInput)
+			LCDwrite(characters[3])
 		# print(characters[3] + " || " + str(line) + "C4")
 	GPIO.output(line,GPIO.LOW)
 	
 try:
 	print("Pressing the C key clears the current input. Pressing the \# key submits the current code.")
+	LCDprompt()
 	while True:
 		readLine(L1, ["1", "2", "3", "A"])
 		readLine(L2, ["4", "5", "6", "B"])
