@@ -3,6 +3,7 @@
 # I AM THE BEAST I WORSHIP
 import RPi.GPIO as GPIO
 import time
+import I2C_LCD_driver as driver
 from datetime import datetime
 
 GPIO.setwarnings(False)
@@ -32,6 +33,15 @@ GPIO.setup(C2, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 GPIO.setup(C3, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 GPIO.setup(C4, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 
+# LCD SETUP
+
+screen = driver.lcd()
+screen.lcd_display_string("LCD INIT", 1)
+time.sleep(1)
+screen.lcd_clear()
+
+# TODO: cursor stuff
+
 # GO SET THE CODE STUFF YOURSELF! THE CONFIG FILE IS EASY JSON.
 
 currentInput = ""
@@ -45,6 +55,7 @@ logging = False
 maxTries = 5 # defaults to 5
 currentIncorrect = 0
 
+
 now = datetime.now()
 
 try:
@@ -57,7 +68,7 @@ except:
 	print("Could not find config file, or your log file isn't set up properly. Make sure everything is properly set.")
 	exit(0)
 
-try: 
+try:
 	# If everything is set up properly, we can go ahead and initalize our log files for writing.
 	logFile = open(logDestination, "a")
 	rawKeyFile = open(rawKeyDestination, "a")
