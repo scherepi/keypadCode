@@ -23,10 +23,10 @@ GPIO.setup(L4, GPIO.OUT)
 
 # COLUMNS:
 
-C4 = 1
-C3 = 7
-C2 = 8
 C1 = 25
+C2 = 8
+C3 = 7
+C4 = 1
 
 GPIO.setup(C1, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 GPIO.setup(C2, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
@@ -58,12 +58,13 @@ def LCDwrite(character):
 	global screenL1
 	screenL1 = screenL1 + character
 	screen.lcd_display_string(screenL1, 1)
-
+	
 def LCDsuccess():
 	global screen
 	screen.lcd_clear()
 	screen.lcd_display_string("You're in!", 1)
-# has to be declared here for the LCD
+	
+# has to be declared here for the LCD's incorrect function to work, it used to be down with the rest of it
 currentIncorrect = 0
 maxTries = 5 # defaults to 5
 def LCDincorrect():
@@ -79,7 +80,8 @@ def LCDlockout():
 	global screenL1
 	screen.lcd_clear()
 	screen.lcd_display_string("Lame.", 1)
-# GO SET THE CODE STUFF YOURSELF! THE CONFIG FILE IS EASY JSON.
+	
+# GO SET THE CODE STUFF YOURSELF! THE CONFIG FILE IS EASY TO USE.
 
 currentInput = ""
 configFile = "codepadConfig"
@@ -127,19 +129,16 @@ def readLine(line, characters):
 	global currentIncorrect
 	GPIO.output(line,GPIO.HIGH)
 	if (GPIO.input(C1) == 1):
-		#print(characters[0] + " || " + str(line) + "C1")
 		currentInput += characters[0]
 		LCDwrite(characters[0])
 		if (logging):
 			rawKeyFile.write(characters[0]) # Log raw keypresses
 	if (GPIO.input(C2) == 1):
-		#print(characters[1] + " || " + str(line) + "C2")
 		currentInput += characters[1]
 		LCDwrite(characters[1])
 		if (logging):
 			rawKeyFile.write(characters[1]) # Continue to log raw keypresses...
 	if (GPIO.input(C3) == 1):
-		#print(characters[2] + " || " + str(line) + "C3")
 		if (logging):
 			rawKeyFile.write(characters[2]) # Everything has to go in the raw logs.
 		if (line == L4):
@@ -162,16 +161,16 @@ def readLine(line, characters):
 					exit(0)
 		else:
 			currentInput += characters[2]
-			LCDwrite(characters[2])
+			LCDwrite(characters[2]) # Write input to LCD prompt
 	if (GPIO.input(C4) == 1):
 		if (logging):
-			rawKeyFile.write(characters[3])
+			rawKeyFile.write(characters[3]) # Log the raw keystrokes...
 		if (line == L3):
+			# This code runs when the character "C" is inputted. 
 			LCDclear()
 			currentInput = ""
 		else:
-			LCDwrite(characters[3])
-		# print(characters[3] + " || " + str(line) + "C4")
+			LCDwrite(characters[3]) # Write the character inputted to the LCD prompt
 	GPIO.output(line,GPIO.LOW)
 	
 try:
